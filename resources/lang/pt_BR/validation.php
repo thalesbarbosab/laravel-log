@@ -146,6 +146,7 @@ return [
         'not_updated'           => 'não foi possível alterar os dados. Tente novamente.',
         'deleted'               => 'dados removidos com sucesso.',
         'not_deleted'           => 'não foi possível remover este dados. Tente novamente.',
+        'failed_job'            => 'não foi possível realizar esta ação neste momento. Tente novamente.',
         '401_error'             => 'não autorizado',
         '401_error_body'        => 'Você não está autorizado a realizar esta requisição.',
         '403_error'             => 'não autorizado',

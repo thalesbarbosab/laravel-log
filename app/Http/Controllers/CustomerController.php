@@ -4,29 +4,63 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
+use App\Models\CustomLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CustomerController extends Controller
 {
     protected $customer;
+    protected $custom_log;
 
-    public function __construct(Customer $customer)
+    public function __construct(Customer $customer, CustomLog $custom_log)
     {
         $this->customer = $customer;
+        $this->custom_log = $custom_log;
     }
 
     public function index()
     {
-        $customers =  $this->customer->all()->sortBy('name');
-        return view('customer.index',['customers'=>$customers]);
+        try{
+            $customers =  $this->customer->all()->sortBy('name');
+            return view('customer.index',['customers'=>$customers]);
+        }catch(\Exception $e){
+
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'index',
+            ]);
+
+            $notification = array(
+                'title'=> trans('validation.generic.Warning'),
+                'message'=> trans('validation.generic.failed_job'),
+                'alert-type' => 'warning'
+            );
+            return back()->with($notification);
+        }
     }
 
     public function create()
     {
-        return view('customer.create');
+        try{
+            return view('customer.create');
+        }catch(\Exception $e){
+
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'create',
+            ]);
+
+            $notification = array(
+                'title'=> trans('validation.generic.Warning'),
+                'message'=> trans('validation.generic.failed_job'),
+                'alert-type' => 'warning'
+            );
+            return back()->with($notification);
+        }
     }
 
-    public function store(CustomerRequest $request)
+    public function store(Request $request)
     {
         try{
             $this->customers->create($request->all());
@@ -35,10 +69,16 @@ class CustomerController extends Controller
                 'message'=> trans('validation.generic.created'),
                 'alert-type' => 'success'
             );
+            Log::info( $notification['message']);
             return redirect()->route('customers.index')->with($notification);
         }
         catch(\Exception $e)
         {
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'store',
+            ]);
+
             $notification = array(
                 'title'=> trans('validation.generic.Error'),
                 'message'=> trans('validation.generic.not_created').': '.$e->getMessage(),
@@ -50,24 +90,45 @@ class CustomerController extends Controller
 
     public function edit($id)
     {
-        $customer =  $this->customer->findOrFail($id);
-        return view('customer.edit',['customer'=>$customer]);
+        try{
+            $customer =  $this->customer->findOrFail($id);
+            return view('customer.edit',['customer'=>$customer]);
+        }catch(\Exception $e){
+
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'edit',
+            ]);
+
+            $notification = array(
+                'title'=> trans('validation.generic.Warning'),
+                'message'=> trans('validation.generic.failed_job'),
+                'alert-type' => 'warning'
+            );
+            return back()->with($notification);
+        }
     }
 
     public function update(CustomerRequest $request, $id)
     {
-        $customer = $this->customer->findOrFail($id);
         try{
+            $customer = $this->customer->findOrFail($id);
             $customer->update($request->all());
             $notification = array(
                 'title'=> trans('validation.generic.Success'),
                 'message'=> trans('validation.generic.updated'),
                 'alert-type' => 'success'
             );
+            Log::info( $notification['message']);
             return redirect()->route('customers.index')->with($notification);
         }
         catch(\Exception $e)
         {
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'update',
+            ]);
+
             $notification = array(
                 'title'=> trans('validation.generic.Error'),
                 'message'=> trans('validation.generic.not_updated').': '.$e->getMessage(),
@@ -79,18 +140,24 @@ class CustomerController extends Controller
 
     public function destroy($id)
     {
-        $customer = $this->customer->findOrFail($id);
         try{
+            $customer = $this->customer->findOrFail($id);
             $customer->delete();
             $notification = array(
                 'title'=> trans('validation.generic.Success'),
                 'message'=> trans('validation.generic.deleted'),
                 'alert-type' => 'success'
             );
+            Log::info($notification['message']);
             return redirect()->route('customers.index')->with($notification);
         }
         catch(\Exception $e)
         {
+            $this->custom_log->create([
+                'content' => $e->getMessage(),
+                'operation' => 'destroy',
+            ]);
+
             $notification = array(
                 'title'=> trans('validation.generic.Error'),
                 'message'=> trans('validation.generic.not_deleted').': '.$e->getMessage(),
