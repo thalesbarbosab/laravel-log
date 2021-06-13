@@ -10,7 +10,7 @@
     </div>
     <h3>@lang('platform.customer.name')</h3>
     <div class="mb-3">
-        <table class="table">
+        <table class="table datatables">
             <thead>
                 <tr>
                 <th scope="col">#</th>
