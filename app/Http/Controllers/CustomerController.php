@@ -63,7 +63,7 @@ class CustomerController extends Controller
     public function store(Request $request)
     {
         try{
-            $this->customers->create($request->all());
+            $this->customer->create($request->all());
             $notification = array(
                 'title'=> trans('validation.generic.Success'),
                 'message'=> trans('validation.generic.created'),

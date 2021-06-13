@@ -30,4 +30,11 @@ class CustomerRequest extends FormRequest
             'cpf'   =>  ["required","unique:customers,cpf,{$this->id}","digits:11","numeric"],//new RightCpf],
         ];
     }
+    public function prepareForValidation(){
+        if($this->cpf){
+            $this->merge([
+                'cpf' =>  preg_replace( '/[^0-9]/is', '', $this->cpf)
+            ]);
+        }
+    }
 }
